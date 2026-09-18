@@ -1,15 +1,15 @@
 # git으로 업로드 되면 안 되는 파일들의 목록
 
 # 이클립스 세팅
-.metadata
-.classpath
-.project
+.metadata/
+.classpath/
+.project/
 
 # vscode 세팅
-*/.vscode
+.vscode/
 
 # 프로젝트 세팅
-*/.settings
-*/bin
-*/lib
+.settings/
+bin/
+lib/
 
