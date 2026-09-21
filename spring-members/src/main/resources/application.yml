@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: spring-members
+
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    username: SPRING_BOOT
+    password: SPRING_BOOT_1234
+    
+mybatis:
+  config-location: classpath:config/mybatis-config.xml
+  mapper-locations: classpath:com/ktdsuniversity/edu/**/dao/mapper/*DaoMapper.xml

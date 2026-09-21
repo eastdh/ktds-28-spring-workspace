@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ktdsuniversity.edu.members.dao.MembersDao">
+
+  <select id="selectMemberCount"
+          resultType="_long">
+    SELECT COUNT(EMAIL)
+      FROM MEMBERS
+  </select>
+  
+  <select id="selectAllMembers"
+          resultType="com.ktdsuniversity.edu.members.vo.response.MemberVO">
+    SELECT EMAIL
+         , NAME
+         , NICKNAME
+         , PASSWORD
+         , REGIST_DATE
+         , MODIFY_DATE
+         , LATEST_LOGIN_SUCCESS_DATE
+         , LATEST_LOGIN_FAIL_DATE
+         , LATEST_LOGOUT_DATE
+         , LOGIN_FAIL_COUNT
+         , LOGIN_BLOCK_YN
+         , LOGIN_BLOCK_DATE
+         , LOGIN_YN
+         , SALT
+         , DEL_YN
+  FROM MEMBERS
+  </select>
+
+</mapper>

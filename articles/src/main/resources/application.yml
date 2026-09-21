@@ -1,0 +1,19 @@
+
+logging:
+  level:
+    root: debug
+spring:
+  application:
+    name: articles
+
+  # Database 설정
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    username: SPRING_BOOT
+    password: SPRING_BOOT_1234
+
+# DB Query 동작과 결과를 받아오기 위한 설정 정보 작성
+mybatis:
+  config-location: classpath:config/mybatis-config.xml
+  mapper-locations: classpath:com/ktdsuniversity/edu/**/dao/mapper/*DaoMapper.xml
