@@ -1,7 +1,11 @@
 package com.ktdsuniversity.edu.articles.vo.response;
 
 import java.util.List;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
 public class ArticleListVO {
 
   /**
@@ -13,26 +17,6 @@ public class ArticleListVO {
    */
   private List<ArticlesVO> articleList;
 
-  public long getArticleCount() {
-    return this.articleCount;
-  }
-
-  public void setArticleCount(long articleCount) {
-    this.articleCount = articleCount;
-  }
-
-  public List<ArticlesVO> getArticleList() {
-    return this.articleList;
-  }
-
-  public void setArticleList(List<ArticlesVO> articleList) {
-    this.articleList = articleList;
-  }
-
-  @Override
-  public String toString() {
-    return "ArticleListVO [articleCount=" + articleCount + ", articleList=" + articleList + "]";
-  }
 
 
 }

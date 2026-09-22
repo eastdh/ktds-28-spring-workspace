@@ -16,6 +16,7 @@
   <select id="selectArticlesCount" resultType="_long">
     SELECT COUNT(ID)
       FROM ARTICLES
+     WHERE DEL_YN = 'N'
   </select>
 
   <!-- List<ArticlesVO> selectAllArticles() -->
@@ -32,7 +33,98 @@
          , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
          , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
          , FILE_SET_ID 
-    FROM ARTICLES
+      FROM ARTICLES
+     WHERE DEL_YN = 'N'
+  </select>
+  
+  <insert id="insertNewArticle"
+          parameterType="com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO">
+<!--           INSERT 코드가 실행되기 전에 id 자리에 selectKey에서 생성한 값을 넣어라 -->
+<!--           VALUES의 #{id}에 들어가는 동시에 RegistArticleVO의 id 필드에도 해당 값이 삽입된다. -->
+          <selectKey order="BEFORE" keyProperty="id" resultType="string"> 
+            SELECT 'AR-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_ARTICLES_PK.NEXTVAL, 6, '0')
+              FROM DUAL
+          </selectKey>
+          INSERT INTO ARTICLES
+           (ID
+          , SUBJECT
+          , CONTENT
+          , EMAIL
+          , CRT_DT
+          , FILE_SET_ID)
+          VALUES
+           (#{id}
+          , #{subject}
+          , #{content}
+          , #{email}
+          , SYSDATE 
+          , NULL)
+          
+  </insert>
+  
+<!--   ArticlesVO selectArticleByArticleId(String articleId) -->
+  <select id="selectArticleByArticleId"
+          parameterType="string"
+          resultType="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO">
+          SELECT ID
+               , SUBJECT
+               , CONTENT
+               , EMAIL
+               , VIEW_CNT 
+               , RECOMMEND_CNT 
+               , DEL_YN 
+               , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , FILE_SET_ID 
+            FROM ARTICLES
+           WHERE ID = #{_parameter} 
+             AND DEL_YN = 'N'
+  </select>
+
+  <!-- int updateArticle(String articleId, ModifyArticleVO modifyArticleVO); -->
+  <update id="updateArticle">
+    UPDATE ARTICLES
+       SET SUBJECT = #{modifyArticleVO.subject}
+         , CONTENT = #{modifyArticleVO.content}
+         , MDFY_DT = SYSDATE 
+     WHERE ID = #{articleId}
+       AND EMAIL = #{modifyArticleVO.email}
+       AND DEL_YN = 'N'
+    
+  </update>
+  <update id="deleteArticle"
+          parameterType="string">
+    UPDATE ARTICLES
+       SET DEL_YN = 'Y'
+         , MDFY_DT = SYSDATE
+     WHERE ID = #{_parameter}
+       AND DEL_YN = 'N'
+  </update>
+  
+<!--     int updateIncreaseViewCount(String articleId); -->
+  <update id="updateIncreaseViewCount"
+          parameterType="string">
+    UPDATE ARTICLES
+       SET VIEW_CNT = VIEW_CNT + 1
+     WHERE ID = #{_parameter}
+       AND DEL_YN = 'N'
+  </update>
+  
+  <update id="updateIncreaseRecommendCount"
+          parameterType="string">
+    UPDATE ARTICLES
+       SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+     WHERE ID = #{_parameter}
+       AND DEL_YN = 'N'
+  </update>
+  
+  <select id="getRecommendCount"
+          parameterType="string"
+          resultType="_long">
+    SELECT RECOMMEND_CNT 
+      FROM ARTICLES
+     WHERE ID = #{_parameter} 
+       AND DEL_YN = 'N'
   </select>
 
 </mapper>
