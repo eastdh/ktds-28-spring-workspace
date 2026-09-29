@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper
+  namespace="com.ktdsuniversity.edu.files.dao.FilesDao">
+
+  <insert id="insertNewFileSet"
+          parameterType="com.ktdsuniversity.edu.files.vo.request.RequestFileSetVO">
+          <selectKey order="BEFORE" keyProperty="id" resultType="string">
+              SELECT 'FS-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_FILE_SET_PK.NEXTVAL, 6, '0')
+              FROM DUAL
+          </selectKey>
+          INSERT INTO FILE_SET
+           (ID
+          , EMAIL
+          , CRT_DT
+          , MDFY_DT)
+          VALUES 
+           (#{id}
+          , #{email}
+          , SYSDATE
+          , NULL
+           )
+  </insert>
+  
+  <insert id="insertNewFile"
+          parameterType="com.ktdsuniversity.edu.files.vo.request.RequestFileVO">
+          INSERT INTO FILES
+           (ID
+          , FILE_SET_ID
+          , DISPLAY_FILE_NAME
+          , OBFUSCATE_FILE_NAME
+          , FILE_SIZE)
+          VALUES 
+           ('FL-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_FILES_PK.NEXTVAL, 6, '0')
+          , #{fileSetId}
+          , #{displayFileName}
+          , #{obfuscateFileName}
+          , #{fileSize}
+           )
+  </insert>
+  
+  <update id="updateFileSet"
+          parameterType="string">
+          UPDATE FILE_SET
+             SET MDFY_DT = SYSDATE 
+           WHERE ID = #{fileSetId}
+  </update>
+  
+  <update id="deleteFilesByArticleId"
+          parameterType="string">
+          UPDATE FILES
+             SET DEL_YN = 'Y'
+           WHERE FILE_SET_ID = (SELECT FILE_SET_ID
+                                  FROM ARTICLES A
+                                 WHERE A.ID = #{_parameter})
+  </update>
+  
+  <select id='selectFilesCountByArticleId'
+          parameterType="string"
+          resultType="_long">
+          SELECT COUNT(ID)
+            FROM FILES
+           WHERE FILE_SET_ID = (SELECT FILE_SET_ID
+                                  FROM ARTICLES A
+                                 WHERE A.ID = #{_parameter})
+             AND DEL_YN = 'N'
+  </select>
+</mapper>

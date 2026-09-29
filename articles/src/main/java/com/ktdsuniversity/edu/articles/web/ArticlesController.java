@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.ktdsuniversity.edu.articles.service.ArticlesService;
 import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
@@ -54,7 +53,10 @@ public class ArticlesController {
 
   @PostMapping("/articles")
   @ResponseBody
-  public ApiResponse<ArticlesVO> makeNewArticle(@RequestBody RegistArticleVO registArticleVO) {
+  public ApiResponse<ArticlesVO> makeNewArticle(
+      // Command Object
+      // 클라이언트가 컨트롤러로 전송한 파라미터(form-data, 쿼리스트링 파라미터)를 자동으로 받아오는 역할
+      RegistArticleVO registArticleVO) {
     try {
       ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
       return ApiResponse.CREATED(result);
@@ -66,7 +68,7 @@ public class ArticlesController {
   @PutMapping("/articles/{articleId}")
   @ResponseBody
   public ApiResponse<ArticlesVO> updateArticle(@PathVariable String articleId,
-      @RequestBody ModifyArticleVO modifyArticleVO) {
+      ModifyArticleVO modifyArticleVO) {
 
     try {
       ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);

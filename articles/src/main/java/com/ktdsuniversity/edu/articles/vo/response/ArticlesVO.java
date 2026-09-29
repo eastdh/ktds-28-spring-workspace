@@ -1,5 +1,6 @@
 package com.ktdsuniversity.edu.articles.vo.response;
 
+import com.ktdsuniversity.edu.files.vo.response.FileSetVO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,4 +24,5 @@ public class ArticlesVO {
   private String mdfyDt;
   private String fileSetId;
 
+  private FileSetVO fileSet;
 }

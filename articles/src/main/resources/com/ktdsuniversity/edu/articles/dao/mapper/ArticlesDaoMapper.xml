@@ -58,27 +58,101 @@
           , #{content}
           , #{email}
           , SYSDATE 
-          , NULL)
+          , #{fileSetId})
           
   </insert>
   
 <!--   ArticlesVO selectArticleByArticleId(String articleId) -->
+<!--   Join된 쿼리의 결과를 받아올 때 사용 -->
+  <resultMap type="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO" 
+             id="ArticlesVOMap"
+             autoMapping="true">
+             <!-- autoMapping => ID를 제외하고, column과 property가 같은 값은 생략  -->
+      <!-- 쿼리한 결과에서 PK칼럼을 ID태그로 지정 
+          column => 컬럼명 작성
+          property => 컬럼의 값이 할당될 멤버 변수의 이름을 작성
+      -->
+      <id column="ID" property="id" />
+      <!-- 쿼리한 결과에서 일반칼럼(FK포함)을 RESULT 태그로 지정 -->
+<!--       <result column="SUBJECT" property="subject"/> -->
+<!--       <result column="CONTENT" property="content"/> -->
+<!--       <result column="EMAIL" property="email"/> -->
+<!--       <result column="VIEW_CNT" property="viewCnt"/> -->
+<!--       <result column="RECOMMEND_CNT" property="recommendCnt"/> -->
+<!--       <result column="DEL_YN" property="delYn"/> -->
+<!--       <result column="CRT_DT" property="crtDt"/> -->
+<!--       <result column="MDFY_DT" property="mdfyDt"/> -->
+<!--       <result column="FILE_SET_ID" property="fileSetId"/> -->
+      
+      <!-- 1:1 관계에서 사용 -->
+      <association property="fileSet"
+                   javaType="com.ktdsuniversity.edu.files.vo.response.FileSetVO"
+                   autoMapping="true">
+          <id column="FILE_SET_ID" property="id" />
+          <result column="FILE_UPLOADER" property="email"/>
+          <result column="FILE_UPLOAD_DATE" property="crtDt"/>
+          <result column="FILE_MODIFY_DATE" property="mdfyDt"/>
+          
+          <!-- 1:N 관계에서 사용 
+              property => 멤버 변수의 이름
+              ofType => Generic 경로
+              javaType => list
+          -->
+          <collection property="files"
+                      ofType="com.ktdsuniversity.edu.files.vo.response.FilesVO"
+                      javaType="list"
+                      autoMapping="true">
+              <id column="FILE_ID" property="id" />
+<!--               <result column="FILE_SET_ID" property="fileSetId"/> -->
+<!--               <result column="DISPLAY_FILE_NAME" property="displayFileName"/> -->
+<!--               <result column="OBFUSCATE_FILE_NAME" property="obfuscateFileName"/> -->
+<!--               <result column="FILE_SIZE" property="fileSize"/> -->
+<!--               <result column="DOWNLOAD_COUNT" property="downloadCount"/> -->
+              <result column="FILE_DEL_YN" property="delYn"/>
+          </collection>
+      </association>
+  </resultMap>
+
   <select id="selectArticleByArticleId"
           parameterType="string"
-          resultType="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO">
-          SELECT ID
-               , SUBJECT
-               , CONTENT
-               , EMAIL
-               , VIEW_CNT 
-               , RECOMMEND_CNT 
-               , DEL_YN 
-               , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-               , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-               , FILE_SET_ID 
-            FROM ARTICLES
-           WHERE ID = #{_parameter} 
-             AND DEL_YN = 'N'
+          resultMap="ArticlesVOMap">
+        SELECT A.ID
+             , A.SUBJECT
+             , A.CONTENT
+             , A.EMAIL
+             , A.VIEW_CNT
+             , A.RECOMMEND_CNT
+             , A.DEL_YN
+             , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+             , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+             , F.ID AS FILE_SET_ID
+             , F.EMAIL AS FILE_UPLOADER
+             , F.CRT_DT AS FILE_UPLOAD_DATE
+             , F.MDFY_DT AS FILE_MODIFY_DATE
+             , F.FILE_ID
+             , F.DISPLAY_FILE_NAME
+             , F.OBFUSCATE_FILE_NAME
+             , F.FILE_SIZE
+             , F.DOWNLOAD_COUNT
+             , F.DEL_YN AS FILE_DEL_YN
+          FROM ARTICLES A
+          LEFT OUTER JOIN (SELECT FS.ID
+                                , FS.EMAIL
+                                , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                , F.ID AS FILE_ID
+                                , F.DISPLAY_FILE_NAME
+                                , F.OBFUSCATE_FILE_NAME
+                                , F.FILE_SIZE
+                                , F.DOWNLOAD_COUNT
+                                , F.DEL_YN
+                             FROM FILE_SET FS
+                            INNER JOIN FILES F
+                               ON FS.ID = F.FILE_SET_ID
+                            WHERE F.DEL_YN = 'N') F
+            ON A.FILE_SET_ID = F.ID
+         WHERE A.ID = #{_parameter}
+           AND A.DEL_YN = 'N'
   </select>
 
   <!-- int updateArticle(String articleId, ModifyArticleVO modifyArticleVO); -->
@@ -87,6 +161,7 @@
        SET SUBJECT = #{modifyArticleVO.subject}
          , CONTENT = #{modifyArticleVO.content}
          , MDFY_DT = SYSDATE 
+         , FILE_SET_ID = #{modifyArticleVO.fileSetId}
      WHERE ID = #{articleId}
        AND EMAIL = #{modifyArticleVO.email}
        AND DEL_YN = 'N'
