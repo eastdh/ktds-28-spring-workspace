@@ -1,8 +1,11 @@
 package com.ktdsuniversity.edu.files.dao;
 
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileSetVO;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileVO;
+import com.ktdsuniversity.edu.files.vo.response.FilesVO;
 
 @Mapper
 public interface FilesDao {
@@ -13,8 +16,13 @@ public interface FilesDao {
 
   int updateFileSet(String fileSetId);
 
-  int deleteFilesByArticleId(String articleId);
+  int deleteFilesByFileSetId(String fileSetId);
 
-  long selectFilesCountByArticleId(String articleId);
+  List<FilesVO> selectFilesByFileSetId(String fileSetId);
+
+  FilesVO selectAttachFile(@Param("fileSetId") String fileSetId, @Param("fileId") String fileId);
+
+  int updateIncreaseDownloadCount(@Param("fileSetId") String fileSetId,
+      @Param("fileId") String fileId);
 
 }

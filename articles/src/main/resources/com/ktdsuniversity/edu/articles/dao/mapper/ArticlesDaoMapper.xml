@@ -18,24 +18,6 @@
       FROM ARTICLES
      WHERE DEL_YN = 'N'
   </select>
-
-  <!-- List<ArticlesVO> selectAllArticles() -->
-
-  <select id="selectAllArticles"
-    resultType="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO">
-    SELECT ID
-         , SUBJECT
-         , CONTENT
-         , EMAIL
-         , VIEW_CNT 
-         , RECOMMEND_CNT 
-         , DEL_YN 
-         , TO_CHAR(CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-         , TO_CHAR(MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-         , FILE_SET_ID 
-      FROM ARTICLES
-     WHERE DEL_YN = 'N'
-  </select>
   
   <insert id="insertNewArticle"
           parameterType="com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO">
@@ -112,47 +94,89 @@
           </collection>
       </association>
   </resultMap>
+  
+    <!-- List<ArticlesVO> selectAllArticles() -->
+
+  <select id="selectAllArticles"
+          resultMap="ArticlesVOMap">
+          SELECT A.ID
+               , A.SUBJECT
+               , A.CONTENT
+               , A.EMAIL
+               , A.VIEW_CNT
+               , A.RECOMMEND_CNT
+               , A.DEL_YN
+               , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , F.ID AS FILE_SET_ID
+               , F.EMAIL AS FILE_UPLOADER
+               , F.CRT_DT AS FILE_UPLOAD_DATE
+               , F.MDFY_DT AS FILE_MODIFY_DATE
+               , F.FILE_ID
+               , F.DISPLAY_FILE_NAME
+               , F.OBFUSCATE_FILE_NAME
+               , F.FILE_SIZE
+               , F.DOWNLOAD_COUNT
+               , F.DEL_YN AS FILE_DEL_YN
+            FROM ARTICLES A
+            LEFT OUTER JOIN (SELECT FS.ID
+                                  , FS.EMAIL
+                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                  , F.ID AS FILE_ID
+                                  , F.DISPLAY_FILE_NAME
+                                  , F.OBFUSCATE_FILE_NAME
+                                  , F.FILE_SIZE
+                                  , F.DOWNLOAD_COUNT
+                                  , F.DEL_YN
+                               FROM FILE_SET FS
+                              INNER JOIN FILES F
+                                 ON FS.ID = F.FILE_SET_ID
+                              WHERE F.DEL_YN = 'N') F
+              ON A.FILE_SET_ID = F.ID
+           WHERE A.DEL_YN = 'N'
+  </select>
 
   <select id="selectArticleByArticleId"
           parameterType="string"
           resultMap="ArticlesVOMap">
-        SELECT A.ID
-             , A.SUBJECT
-             , A.CONTENT
-             , A.EMAIL
-             , A.VIEW_CNT
-             , A.RECOMMEND_CNT
-             , A.DEL_YN
-             , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-             , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-             , F.ID AS FILE_SET_ID
-             , F.EMAIL AS FILE_UPLOADER
-             , F.CRT_DT AS FILE_UPLOAD_DATE
-             , F.MDFY_DT AS FILE_MODIFY_DATE
-             , F.FILE_ID
-             , F.DISPLAY_FILE_NAME
-             , F.OBFUSCATE_FILE_NAME
-             , F.FILE_SIZE
-             , F.DOWNLOAD_COUNT
-             , F.DEL_YN AS FILE_DEL_YN
-          FROM ARTICLES A
-          LEFT OUTER JOIN (SELECT FS.ID
-                                , FS.EMAIL
-                                , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-                                , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-                                , F.ID AS FILE_ID
-                                , F.DISPLAY_FILE_NAME
-                                , F.OBFUSCATE_FILE_NAME
-                                , F.FILE_SIZE
-                                , F.DOWNLOAD_COUNT
-                                , F.DEL_YN
-                             FROM FILE_SET FS
-                            INNER JOIN FILES F
-                               ON FS.ID = F.FILE_SET_ID
-                            WHERE F.DEL_YN = 'N') F
-            ON A.FILE_SET_ID = F.ID
-         WHERE A.ID = #{_parameter}
-           AND A.DEL_YN = 'N'
+          SELECT A.ID
+               , A.SUBJECT
+               , A.CONTENT
+               , A.EMAIL
+               , A.VIEW_CNT
+               , A.RECOMMEND_CNT
+               , A.DEL_YN
+               , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , F.ID AS FILE_SET_ID
+               , F.EMAIL AS FILE_UPLOADER
+               , F.CRT_DT AS FILE_UPLOAD_DATE
+               , F.MDFY_DT AS FILE_MODIFY_DATE
+               , F.FILE_ID
+               , F.DISPLAY_FILE_NAME
+               , F.OBFUSCATE_FILE_NAME
+               , F.FILE_SIZE
+               , F.DOWNLOAD_COUNT
+               , F.DEL_YN AS FILE_DEL_YN
+            FROM ARTICLES A
+            LEFT OUTER JOIN (SELECT FS.ID
+                                  , FS.EMAIL
+                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                  , F.ID AS FILE_ID
+                                  , F.DISPLAY_FILE_NAME
+                                  , F.OBFUSCATE_FILE_NAME
+                                  , F.FILE_SIZE
+                                  , F.DOWNLOAD_COUNT
+                                  , F.DEL_YN
+                               FROM FILE_SET FS
+                              INNER JOIN FILES F
+                                 ON FS.ID = F.FILE_SET_ID
+                              WHERE F.DEL_YN = 'N') F
+              ON A.FILE_SET_ID = F.ID
+           WHERE A.ID = #{_parameter}
+             AND A.DEL_YN = 'N'
   </select>
 
   <!-- int updateArticle(String articleId, ModifyArticleVO modifyArticleVO); -->

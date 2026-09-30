@@ -1,7 +1,7 @@
+#logging:
+#  level:
+#    root: debug
 
-logging:
-  level:
-    root: debug
 spring:
   application:
     name: articles
@@ -12,8 +12,20 @@ spring:
     url: jdbc:oracle:thin:@localhost:1521:XE
     username: SPRING_BOOT
     password: SPRING_BOOT_1234
+    
+  # file upload 용량 제한
+  servlet:
+    multipart:
+      max-file-size: 100MB # 동시에 처리할 수 있는 최대 용량
+      max-request-size: 10MB # 1회의 요청에 업로드할 수 있는 용량
 
 # DB Query 동작과 결과를 받아오기 위한 설정 정보 작성
 mybatis:
   config-location: classpath:config/mybatis-config.xml
   mapper-locations: classpath:com/ktdsuniversity/edu/**/dao/mapper/*DaoMapper.xml
+
+# Custom 환경 설정
+# 사용하려는 Spring Bean에서 @Value로 사용 가능.
+app:
+  multipart:
+    store-path: uploadFiles

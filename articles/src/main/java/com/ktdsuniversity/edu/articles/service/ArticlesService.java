@@ -53,7 +53,7 @@ public interface ArticlesService {
    * 게시글의 추천수를 증가시키고 추천수를 반환한다.
    * 
    * @param articleId
-   * @return 게시글 정보
+   * @return 게시글 추천 수
    */
   long recommendOneArticle(String articleId);
 }
