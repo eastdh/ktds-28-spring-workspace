@@ -49,6 +49,10 @@ public class RepliesServiceImpl implements RepliesService {
 
     RepliesVO originalReply = this.repliesDao.selectReplyByReplyId(replyId);
 
+    if (originalReply == null) {
+      throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+    }
+
     String fileSetId = this.multipartHandler.storeFiles(modifyReplyVO.getFile(),
         modifyReplyVO.getEmail(), originalReply.getFileSetId());
     modifyReplyVO.setFileSetId(fileSetId);
@@ -66,6 +70,10 @@ public class RepliesServiceImpl implements RepliesService {
   @Override
   public String deleteReply(String articleId, String replyId) {
     RepliesVO originalReply = this.repliesDao.selectReplyByReplyId(replyId);
+
+    if (originalReply == null) {
+      throw new IllegalArgumentException("존재하지 않는 댓글입니다.");
+    }
 
     int deletedRows = this.repliesDao.deleteReply(articleId, replyId);
 

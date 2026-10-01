@@ -60,7 +60,7 @@ public class ArticlesServiceImpl implements ArticlesService {
     ArticlesVO originalArticle = this.articlesDao.selectArticleByArticleId(articleId);
 
     // 게시글 작성자 본인이 아니면 Exception
-    if (!originalArticle.getEmail().equals(modifyArticleVO.getEmail())) {
+    if (originalArticle == null || !originalArticle.getEmail().equals(modifyArticleVO.getEmail())) {
       throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
     }
 
@@ -83,6 +83,10 @@ public class ArticlesServiceImpl implements ArticlesService {
   public String deleteArticle(String articleId) {
 
     ArticlesVO originalArticle = this.articlesDao.selectArticleByArticleId(articleId);
+
+    if (originalArticle == null) {
+      throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+    }
 
     int deletedRows = this.articlesDao.deleteArticle(articleId);
 
