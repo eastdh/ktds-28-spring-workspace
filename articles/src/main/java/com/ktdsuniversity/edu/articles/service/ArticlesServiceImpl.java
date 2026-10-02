@@ -1,12 +1,17 @@
 package com.ktdsuniversity.edu.articles.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import com.ktdsuniversity.edu.articles.dao.ArticlesDao;
 import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.files.components.MultipartHandler;
+import com.ktdsuniversity.edu.members.vo.response.MembersVO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -82,10 +87,25 @@ public class ArticlesServiceImpl implements ArticlesService {
   @Override
   public String deleteArticle(String articleId) {
 
+    // Controller 가 아닌 클래스에서 세션 데이터를 자동으로 주입받을 수 없다.
+    // 고전적 방법: Controller 에서 Service 호출할 때 파라미터로 세션의 데이터를 전달.
+    // 새로운 방법: Spring 에서 Session 데이터를 가져온다. ==> 주입 받는 것이 아니다!
+    ServletRequestAttributes requestAttributes =
+        (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    HttpServletRequest request = requestAttributes.getRequest();
+    HttpSession session = request.getSession();
+
+    MembersVO loggedMember = (MembersVO) session.getAttribute("__LOGIN_USER__");
+
     ArticlesVO originalArticle = this.articlesDao.selectArticleByArticleId(articleId);
 
     if (originalArticle == null) {
       throw new IllegalArgumentException("존재하지 않는 게시글입니다.");
+    }
+
+
+    if (!loggedMember.getEmail().equals(originalArticle.getEmail())) {
+      throw new IllegalArgumentException("삭제할 수 없는 게시글입니다.");
     }
 
     int deletedRows = this.articlesDao.deleteArticle(articleId);

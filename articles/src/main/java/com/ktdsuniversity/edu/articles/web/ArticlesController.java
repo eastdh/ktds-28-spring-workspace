@@ -15,6 +15,8 @@ import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
+import com.ktdsuniversity.edu.members.vo.response.MembersVO;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -62,7 +64,7 @@ public class ArticlesController {
       // 클라이언트가 컨트롤러로 전송한 파라미터(form-data, 쿼리스트링 파라미터)를 자동으로 받아오는 역할
       @Valid @ModelAttribute RegistArticleVO registArticleVO,
       // Validation 결과가 저장된다
-      BindingResult validationResult) {
+      BindingResult validationResult, HttpSession session) {
 
     System.out.println(validationResult);
 
@@ -70,6 +72,13 @@ public class ArticlesController {
     if (validationResult.hasErrors()) {
       return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
     }
+
+    // HttpSession에 있는 __LOGIN_USER__에 있는 Email을 꺼내서 registArticleVO에 할당
+    MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+    if (membersVO == null) {
+      throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+    }
+    registArticleVO.setEmail(membersVO.getEmail());
 
     try {
       ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
@@ -84,11 +93,19 @@ public class ArticlesController {
   public ApiResponse<ArticlesVO> updateArticle(
       @Pattern(regexp = "^AR-\\d{8}-\\d{6,8}$",
           message = "잘못된 요청입니다.") @PathVariable String articleId,
-      @Valid @ModelAttribute ModifyArticleVO modifyArticleVO, BindingResult validationResult) {
+      @Valid @ModelAttribute ModifyArticleVO modifyArticleVO, BindingResult validationResult,
+      HttpSession session) {
 
     if (validationResult.hasErrors()) {
       return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
     }
+
+    // HttpSession에 있는 __LOGIN_USER__에 있는 Email을 꺼내서 registArticleVO에 할당
+    MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+    if (membersVO == null) {
+      throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+    }
+    modifyArticleVO.setEmail(membersVO.getEmail());
 
     try {
       ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);

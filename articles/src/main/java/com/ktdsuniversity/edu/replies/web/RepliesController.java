@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
+import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 import com.ktdsuniversity.edu.replies.service.RepliesService;
 import com.ktdsuniversity.edu.replies.vo.request.ModifyReplyVO;
 import com.ktdsuniversity.edu.replies.vo.request.RegistReplyVO;
 import com.ktdsuniversity.edu.replies.vo.response.RepliesVO;
 import com.ktdsuniversity.edu.replies.vo.response.ReplyListVO;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -41,10 +43,19 @@ public class RepliesController {
   public ApiResponse<RepliesVO> makeNewReply(
       @Pattern(regexp = "^AR-\\d{8}-\\d{6,8}$",
           message = "잘못된 요청입니다.") @PathVariable String articleId,
-      @Valid @ModelAttribute RegistReplyVO registReplyVO, BindingResult validationResult) {
+      @Valid @ModelAttribute RegistReplyVO registReplyVO, BindingResult validationResult,
+      HttpSession session) {
     if (validationResult.hasErrors()) {
       return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
     }
+
+    // HttpSession에 있는 __LOGIN_USER__에 있는 Email을 꺼내서 registArticleVO에 할당
+    MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+    if (membersVO == null) {
+      throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+    }
+    registReplyVO.setEmail(membersVO.getEmail());
+
     try {
       RepliesVO result = this.repliesService.createNewReply(articleId, registReplyVO);
       return ApiResponse.CREATED(result);
@@ -61,11 +72,20 @@ public class RepliesController {
           message = "잘못된 요청입니다.") @PathVariable String articleId,
       @Pattern(regexp = "^RE-\\d{8}-\\d{6,8}$",
           message = "잘못된 요청입니다.") @PathVariable String replyId,
-      @Valid @ModelAttribute ModifyReplyVO modifyReplyVO, BindingResult validationResult) {
+      @Valid @ModelAttribute ModifyReplyVO modifyReplyVO, BindingResult validationResult,
+      HttpSession session) {
 
     if (validationResult.hasErrors()) {
       return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
     }
+
+    // HttpSession에 있는 __LOGIN_USER__에 있는 Email을 꺼내서 registArticleVO에 할당
+    MembersVO membersVO = (MembersVO) session.getAttribute("__LOGIN_USER__");
+    if (membersVO == null) {
+      throw new IllegalArgumentException("로그인이 필요한 기능입니다.");
+    }
+    modifyReplyVO.setEmail(membersVO.getEmail());
+
 
     try {
       RepliesVO result = this.repliesService.updateReply(articleId, replyId, modifyReplyVO);
