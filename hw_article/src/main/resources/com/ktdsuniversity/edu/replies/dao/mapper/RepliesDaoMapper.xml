@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ktdsuniversity.edu.replies.dao.RepliesDao">
+  <!-- long selectRepliesCountByArticleId(String articleId);                   -->
+  <select id="selectRepliesCountByArticleId" 
+          parameterType="string"
+          resultType="_long">
+          SELECT COUNT(ID)
+            FROM REPLIES
+           WHERE ARTICLE_ID = #{_parameter}
+             AND DEL_YN = 'N'
+  </select>
+  
+  <resultMap type="com.ktdsuniversity.edu.replies.vo.response.RepliesVO" 
+             id="RepliesVOMap"
+             autoMapping="true">
+      <id column="ID" property="id" />
+      <association property="fileSet"
+                   javaType="com.ktdsuniversity.edu.files.vo.response.FileSetVO"
+                   autoMapping="true">
+                   
+          <id column="FILE_SET_ID" property="id" />
+          <result column="FILE_UPLOADER" property="email"/>
+          <result column="FILE_UPLOAD_DATE" property="crtDt"/>
+          <result column="FILE_MODIFY_DATE" property="mdfyDt"/>
+          
+          <collection property="files"
+                      ofType="com.ktdsuniversity.edu.files.vo.response.FilesVO"
+                      javaType="list"
+                      autoMapping="true">
+              <id column="FILE_ID" property="id" />
+              <result column="FILE_DEL_YN" property="delYn"/>
+          </collection>
+      </association>
+  </resultMap>
+  <!-- List<RepliesVO> selectAllRepliesByArticleId(String articleId);          -->
+  <select id="selectAllRepliesByArticleId"
+          parameterType="string"
+          resultMap="RepliesVOMap">
+          SELECT R.ID
+               , R.ARTICLE_ID
+               , R.EMAIL
+               , R.CONTENT
+               , R.RECOMMEND_CNT
+               , R.DEL_YN
+               , TO_CHAR(R.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(R.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , F.ID AS FILE_SET_ID
+               , F.EMAIL AS FILE_UPLOADER
+               , F.CRT_DT AS FILE_UPLOAD_DATE
+               , F.MDFY_DT AS FILE_MODIFY_DATE
+               , F.FILE_ID
+               , F.DISPLAY_FILE_NAME
+               , F.OBFUSCATE_FILE_NAME
+               , F.FILE_SIZE
+               , F.DOWNLOAD_COUNT
+               , F.DEL_YN AS FILE_DEL_YN
+            FROM REPLIES R
+            LEFT OUTER JOIN (SELECT FS.ID
+                                  , FS.EMAIL
+                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                  , F.ID AS FILE_ID
+                                  , F.DISPLAY_FILE_NAME
+                                  , F.OBFUSCATE_FILE_NAME
+                                  , F.FILE_SIZE
+                                  , F.DOWNLOAD_COUNT
+                                  , F.DEL_YN
+                               FROM FILE_SET FS
+                              INNER JOIN FILES F
+                                 ON FS.ID = F.FILE_SET_ID
+                              WHERE F.DEL_YN = 'N') F
+                  ON R.FILE_SET_ID = F.ID
+               WHERE R.DEL_YN = 'N'
+                 AND R.ARTICLE_ID = #{_parameter}
+  </select>
+  
+  <!-- RepliesVO selectReplyByReplyId(String id);                              -->
+  <select id="selectReplyByReplyId"
+          parameterType="string"
+          resultMap="RepliesVOMap">
+          SELECT R.ID
+               , R.ARTICLE_ID
+               , R.EMAIL
+               , R.CONTENT
+               , R.RECOMMEND_CNT
+               , R.DEL_YN
+               , TO_CHAR(R.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(R.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , F.ID AS FILE_SET_ID
+               , F.EMAIL AS FILE_UPLOADER
+               , F.CRT_DT AS FILE_UPLOAD_DATE
+               , F.MDFY_DT AS FILE_MODIFY_DATE
+               , F.FILE_ID
+               , F.DISPLAY_FILE_NAME
+               , F.OBFUSCATE_FILE_NAME
+               , F.FILE_SIZE
+               , F.DOWNLOAD_COUNT
+               , F.DEL_YN AS FILE_DEL_YN
+            FROM REPLIES R
+            LEFT OUTER JOIN (SELECT FS.ID
+                                  , FS.EMAIL
+                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                  , F.ID AS FILE_ID
+                                  , F.DISPLAY_FILE_NAME
+                                  , F.OBFUSCATE_FILE_NAME
+                                  , F.FILE_SIZE
+                                  , F.DOWNLOAD_COUNT
+                                  , F.DEL_YN
+                               FROM FILE_SET FS
+                              INNER JOIN FILES F
+                                 ON FS.ID = F.FILE_SET_ID
+                              WHERE F.DEL_YN = 'N') F
+                  ON R.FILE_SET_ID = F.ID
+               WHERE R.DEL_YN = 'N'
+                 AND R.ID = #{_parameter}
+  </select>
+  
+  <!--   int insertNewReply(String articleId, RegistReplyVO registReplyVO); -->
+  <insert id="insertNewReply">
+          <selectKey order="BEFORE" keyProperty="registReplyVO.id" resultType="string"> 
+            SELECT 'RE-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_REPLIES_PK.NEXTVAL, 6, '0')
+            FROM DUAL
+          </selectKey>
+          INSERT INTO REPLIES 
+           (ID
+          , ARTICLE_ID
+          , EMAIL
+          , CONTENT
+          , CRT_DT
+          , FILE_SET_ID)
+          VALUES 
+           (#{registReplyVO.id}
+          , #{articleId}
+          , #{registReplyVO.email}
+          , #{registReplyVO.content}
+          , SYSDATE
+          , #{registReplyVO.fileSetId})
+  </insert>
+  
+  <!-- int updateReplyByArticleIdAndReplyId(String articleId, String replyId, ModifyReplyVO modifyReplyVO) -->
+  <update id="updateReplyByArticleIdAndReplyId">
+          UPDATE REPLIES
+             SET CONTENT = #{modifyReplyVO.content}
+               , MDFY_DT = SYSDATE
+               , FILE_SET_ID = #{modifyReplyVO.fileSetId}
+           WHERE ARTICLE_ID = #{articleId}
+             AND ID = #{replyId}
+             AND EMAIL = #{modifyReplyVO.email}
+             AND DEL_YN = 'N'
+  </update>
+  
+  <!-- int deleteReply(String articleId, String replyId);                      -->
+  <update id="deleteReply">
+          UPDATE REPLIES
+             SET DEL_YN = 'Y'
+               , MDFY_DT = SYSDATE
+           WHERE ARTICLE_ID = #{articleId}
+             AND ID = #{replyId}
+             AND DEL_YN = 'N'
+  </update>
+  
+  <!-- int updateIncreaseRecommendCount(String articleId, String replyId);     -->
+  <update id="updateIncreaseRecommendCount">
+          UPDATE REPLIES
+             SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+           WHERE ARTICLE_ID = #{articleId}
+             AND ID = #{replyId}
+             AND DEL_YN = 'N'
+  </update>
+  
+  <!-- long getRecommendCount(String articleId, String replyId);               -->
+  <select id="getRecommendCount"
+          resultType="_long">
+          SELECT RECOMMEND_CNT 
+            FROM REPLIES
+           WHERE ARTICLE_ID = #{articleId}
+             AND ID = #{replyId}
+             AND DEL_YN = 'N'
+  </select>
+
+</mapper> 

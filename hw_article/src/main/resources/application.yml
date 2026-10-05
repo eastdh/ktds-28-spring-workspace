@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: hw_article
+
+  # Database 설정
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: jdbc:oracle:thin:@localhost:1521:XE 
+    username: SPRING_BOOT
+    password: SPRING_BOOT_1234
+
+  # file upload 용량 제한
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 10MB
+      
+# DB query 동작과 겨로가를 받아오기 위한 설정 정보 작성
+mybatis:
+  config-location: classpath:config/mybatis-config.xml
+  mapper-locations: classpath:com/ktdsuniversity/edu/**/dao/mapper/*DaoMapper.xml
+  
+  
+# Custom Value
+app:
+  multipart:
+    store-path: uploadFiles
+    
+  #aesKey
+  encrypt:
+    aes:
+      key: abcde12345abcde12345abcde12345zz
+        
+        

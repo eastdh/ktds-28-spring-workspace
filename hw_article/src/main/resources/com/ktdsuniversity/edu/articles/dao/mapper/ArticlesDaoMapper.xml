@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ktdsuniversity.edu.articles.dao.ArticlesDao">
+
+  <!-- public long selectArticleCount(); -->
+  <select id="selectArticleCount"
+          resultType="_long">
+          SELECT COUNT(ID)
+            FROM ARTICLES
+           WHERE DEL_YN = 'N'
+  </select>
+  
+  <!--public int insertNewArticle(RegistArticleVO registArticleVO);-->
+  <insert id="insertNewArticle"
+          parameterType="com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO">
+          <selectKey order="BEFORE" keyProperty="id" resultType="string"> 
+            SELECT 'AR-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_ARTICLES_PK.NEXTVAL, 6, '0')
+              FROM DUAL
+          </selectKey>
+          INSERT INTO ARTICLES
+           (ID
+          , SUBJECT
+          , CONTENT
+          , EMAIL
+          , CRT_DT
+          , FILE_SET_ID)
+          VALUES
+           (#{id}
+          , #{subject}
+          , #{content}
+          , #{email}
+          , SYSDATE 
+          , #{fileSetId})
+  </insert>
+  
+  <resultMap id="ArticlesVOMap" 
+             type="com.ktdsuniversity.edu.articles.vo.response.ArticlesVO"
+             autoMapping="true">
+             <id column="ID" property="id" />
+             <!-- 1:1 관계에서 사용 -->
+             <association property="fileSet"
+                          javaType="com.ktdsuniversity.edu.files.vo.response.FileSetVO"
+                          autoMapping="true">
+                          <id column="FILE_SET_ID" property="id" />
+                          <result column="FILE_UPLOADER" property="email"/>
+                          <result column="FILE_UPLOAD_DATE" property="crtDt"/>
+                          <result column="FILE_MODIFY_DATE" property="mdfyDt"/>
+                          <!-- 1:N 관계에서 사용 -->
+                          <collection property="files"
+                                      ofType="com.ktdsuniversity.edu.files.vo.response.FilesVO"
+                                      javaType="list"
+                                      autoMapping="true">
+                                      <id column="FILE_ID" property="id" />
+                                      <result column="FILE_DEL_YN" property="delYn"/>
+                          </collection>
+             </association>
+  </resultMap>
+  
+  <!--public List<ArticlesVO> selectAllArticles();-->
+  <select id="selectAllArticles"
+          resultMap="ArticlesVOMap">
+          SELECT A.ID
+               , A.SUBJECT
+               , A.CONTENT
+               , A.EMAIL
+               , A.VIEW_CNT
+               , A.RECOMMEND_CNT
+               , A.DEL_YN
+               , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , F.ID AS FILE_SET_ID
+               , F.EMAIL AS FILE_UPLOADER
+               , F.CRT_DT AS FILE_UPLOAD_DATE
+               , F.MDFY_DT AS FILE_MODIFY_DATE
+               , F.FILE_ID
+               , F.DISPLAY_FILE_NAME
+               , F.OBFUSCATE_FILE_NAME
+               , F.FILE_SIZE
+               , F.DOWNLOAD_COUNT
+               , F.DEL_YN AS FILE_DEL_YN
+            FROM ARTICLES A
+            LEFT OUTER JOIN (SELECT FS.ID
+                                  , FS.EMAIL
+                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                  , F.ID AS FILE_ID
+                                  , F.DISPLAY_FILE_NAME
+                                  , F.OBFUSCATE_FILE_NAME
+                                  , F.FILE_SIZE
+                                  , F.DOWNLOAD_COUNT
+                                  , F.DEL_YN
+                               FROM FILE_SET FS
+                              INNER JOIN FILES F
+                                 ON FS.ID = F.FILE_SET_ID
+                              WHERE F.DEL_YN = 'N') F
+              ON A.FILE_SET_ID = F.ID
+           WHERE A.DEL_YN = 'N'
+  </select>
+  
+  <!--public ArticlesVO selectArticleByArticleId(String id);-->
+  <select id="selectArticleByArticleId"
+          parameterType="string"
+          resultMap="ArticlesVOMap">
+          SELECT A.ID
+               , A.SUBJECT
+               , A.CONTENT
+               , A.EMAIL
+               , A.VIEW_CNT
+               , A.RECOMMEND_CNT
+               , A.DEL_YN
+               , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+               , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+               , F.ID AS FILE_SET_ID
+               , F.EMAIL AS FILE_UPLOADER
+               , F.CRT_DT AS FILE_UPLOAD_DATE
+               , F.MDFY_DT AS FILE_MODIFY_DATE
+               , F.FILE_ID
+               , F.DISPLAY_FILE_NAME
+               , F.OBFUSCATE_FILE_NAME
+               , F.FILE_SIZE
+               , F.DOWNLOAD_COUNT
+               , F.DEL_YN AS FILE_DEL_YN
+            FROM ARTICLES A
+            LEFT OUTER JOIN (SELECT FS.ID
+                                  , FS.EMAIL
+                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                  , F.ID AS FILE_ID
+                                  , F.DISPLAY_FILE_NAME
+                                  , F.OBFUSCATE_FILE_NAME
+                                  , F.FILE_SIZE
+                                  , F.DOWNLOAD_COUNT
+                                  , F.DEL_YN
+                               FROM FILE_SET FS
+                              INNER JOIN FILES F
+                                 ON FS.ID = F.FILE_SET_ID
+                              WHERE F.DEL_YN = 'N') F
+              ON A.FILE_SET_ID = F.ID
+           WHERE A.ID = #{_parameter}
+             AND A.DEL_YN = 'N'
+  </select>
+
+  <!--public int updateArticle(String articleId, ModifyArticleVO modifyArticleVO);-->
+  <update id="updateArticle">
+          UPDATE ARTICLES
+             SET SUBJECT = #{modifyArticleVO.subject}
+               , CONTENT = #{modifyArticleVO.content}
+               , MDFY_DT = SYSDATE 
+               , FILE_SET_ID = #{modifyArticleVO.fileSetId}
+           WHERE ID = #{articleId}
+             AND EMAIL = #{modifyArticleVO.email}
+             AND DEL_YN = 'N'
+  </update>
+
+  <!--public int deleteArticle(String articleId);-->
+  <update id="deleteArticle"
+          parameterType="string">
+          UPDATE ARTICLES
+             SET DEL_YN = 'Y'
+               , MDFY_DT = SYSDATE
+           WHERE ID = #{_parameter}
+             AND DEL_YN = 'N'
+  </update>
+
+  <!--public int updateIncreaseViewCount(String articleId);-->
+  <update id="updateIncreaseViewCount"
+          parameterType="string">
+          UPDATE ARTICLES
+             SET VIEW_CNT = VIEW_CNT + 1
+           WHERE ID = #{_parameter}
+             AND DEL_YN = 'N'
+  </update>
+
+  <!--public int updateIncreaseRecommendCount(String articleId);-->
+  <update id="updateIncreaseRecommendCount"
+          parameterType="string">
+          UPDATE ARTICLES
+             SET RECOMMEND_CNT = RECOMMEND_CNT + 1
+           WHERE ID = #{_parameter}
+             AND DEL_YN = 'N'
+  </update>
+
+  <!--public long getRecommendCount(String articleId);-->
+  <select id="getRecommendCount"
+          parameterType="string"
+          resultType="_long">
+          SELECT RECOMMEND_CNT 
+            FROM ARTICLES
+           WHERE ID = #{_parameter} 
+             AND DEL_YN = 'N'
+  </select>
+</mapper>

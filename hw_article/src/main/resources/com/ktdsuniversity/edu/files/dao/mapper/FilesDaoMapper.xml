@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ktdsuniversity.edu.files.dao.FilesDao">
+
+  <!--int insertNewFileSet(RequestFileSetVO fileSetVO);-->
+  <insert id="insertNewFileSet"
+          parameterType="com.ktdsuniversity.edu.files.vo.request.RequestFileSetVO">
+          <selectKey order="BEFORE" keyProperty="id" resultType="string">
+              SELECT 'FS-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_FILE_SET_PK.NEXTVAL, 6, '0')
+              FROM DUAL
+          </selectKey>
+          INSERT INTO FILE_SET
+           (ID
+          , EMAIL
+          , CRT_DT
+          , MDFY_DT)
+          VALUES 
+           (#{id}
+          , #{email}
+          , SYSDATE
+          , NULL
+           )
+  </insert>
+
+  <!--void insertNewFile(RequestFileVO fileVO);-->
+  <insert id="insertNewFile"
+          parameterType="com.ktdsuniversity.edu.files.vo.request.RequestFileVO">
+          INSERT INTO FILES
+           (ID
+          , FILE_SET_ID
+          , DISPLAY_FILE_NAME
+          , OBFUSCATE_FILE_NAME
+          , FILE_SIZE)
+          VALUES 
+           ('FL-' || TO_CHAR(SYSDATE, 'YYYYMMDD-') || LPAD(SEQ_FILES_PK.NEXTVAL, 6, '0')
+          , #{fileSetId}
+          , #{displayFileName}
+          , #{obfuscateFileName}
+          , #{fileSize}
+           )
+      
+  </insert>
+
+  <!--void updateFileSet(String fileSetId);-->
+  <update id="updateFileSet"
+          parameterType="string">
+          UPDATE FILE_SET
+             SET MDFY_DT = SYSDATE 
+           WHERE ID = #{fileSetId}
+  </update>
+
+  <!--List<FilesVO> selectFilesByFileSetId(String fileSetId);-->
+  <select id="selectFilesByFileSetId"
+          parameterType="string"
+          resultType="com.ktdsuniversity.edu.files.vo.response.FilesVO">
+          SELECT ID
+               , FILE_SET_ID
+               , DISPLAY_FILE_NAME
+               , OBFUSCATE_FILE_NAME
+               , FILE_SIZE
+               , DOWNLOAD_COUNT
+               , DEL_YN
+            FROM FILES
+           WHERE FILE_SET_ID = #{_parameter}
+             AND DEL_YN = 'N'
+  </select>
+
+  <!--int deleteFilesByFileSetId(String fileSetId);-->
+  <update id="deleteFilesByFileSetId"
+          parameterType="string">
+          UPDATE FILES
+             SET DEL_YN = 'Y'
+           WHERE FILE_SET_ID = #{_parameter}
+  </update>
+
+  <!--FilesVO selectAttachFile(String fileSetId, String fileId);-->
+  <select id="selectAttachFile"
+          resultType="com.ktdsuniversity.edu.files.vo.response.FilesVO">
+          SELECT ID
+               , FILE_SET_ID
+               , DISPLAY_FILE_NAME
+               , OBFUSCATE_FILE_NAME
+               , FILE_SIZE
+               , DOWNLOAD_COUNT
+               , DEL_YN
+            FROM FILES
+           WHERE FILE_SET_ID = #{fileSetId}
+             AND ID = #{fileId}
+             AND DEL_YN = 'N'
+  </select>
+
+  <!--int updateIncreaseDownloadCount(String fileSetId, String fileId);-->
+  <update id="updateIncreaseDownloadCount">
+          UPDATE FILES
+             SET DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+           WHERE FILE_SET_ID = #{fileSetId}
+             AND ID = #{fileId}
+             AND DEL_YN = 'N'
+  </update>
+</mapper>
