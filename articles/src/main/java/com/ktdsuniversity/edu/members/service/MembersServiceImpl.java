@@ -2,6 +2,8 @@ package com.ktdsuniversity.edu.members.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.ktdsuniversity.edu.commons.crypto.AES;
@@ -19,6 +21,7 @@ public class MembersServiceImpl implements MembersService {
   @Value("${app.encrypt.aes.key}")
   private String aesKey;
   private final MembersDao membersDao;
+  private static final Logger logger = LoggerFactory.getLogger(MembersServiceImpl.class);
 
   @Override
   public MembersVO createNewMember(RegistMembersVO registMembersVO) {
@@ -33,7 +36,8 @@ public class MembersServiceImpl implements MembersService {
     registMembersVO.setSalt(salt);
 
     // 3. 닉네임 중복 검사
-    if (this.membersDao.selectNicknameCount(registMembersVO.getNickname()) > 0) {
+    if (this.membersDao
+        .selectNicknameCount(AES.encode(this.aesKey, registMembersVO.getNickname())) > 0) {
       throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
     }
 
@@ -66,7 +70,7 @@ public class MembersServiceImpl implements MembersService {
     MembersVO membersVO = this.membersDao.selectMemberByEmail(loginMemberVO.getEmail());
 
     // 회원 정보가 존재하는가?
-    if (membersVO == null) {
+    if (membersVO == null || membersVO.getDelYn().equals("Y")) {
       throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
     }
 
@@ -84,7 +88,7 @@ public class MembersServiceImpl implements MembersService {
         // 차단 후 1시간 경과
         // 로그인 실패 횟수 0으로 초기화 & 차단 여부 N으로 수정
         int updatedRows = this.membersDao.updateResetBlock(loginMemberVO.getEmail());
-        System.out.println(updatedRows + "건이 Block 해제되었음");
+        logger.info("{}건이 Block 해제되었음", updatedRows);
       } else {
         throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
       }
@@ -113,8 +117,8 @@ public class MembersServiceImpl implements MembersService {
 
     // 비밀번호 불일치
     int updatedRows = this.membersDao.updateLoginFailed(membersVO.getEmail());
-    System.out.println(membersVO.getEmail() + " 로그인 실패!");
-    System.out.println(updatedRows + "건이 로그인 실패 처리 됨");
+    logger.info("{} 로그인 실패!", membersVO.getEmail());
+    logger.info("{}건이 로그인 실패 처리 됨", updatedRows);
 
     // 로그인 실패 횟수 확인하면서 계정 차단 시도
     int blockUpdatedRows = this.membersDao.updateBlock(membersVO.getEmail());
