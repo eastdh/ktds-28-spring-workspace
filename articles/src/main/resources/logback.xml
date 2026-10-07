@@ -8,13 +8,13 @@
     </rollingPolicy>
     
     <encoder>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}(LINE:%line) -%kvp- %msg%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [Line:%line] -%kvp- %msg%n</pattern>
     </encoder>
   </appender>
   
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}(LINE:%line) -%kvp- %msg%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [Line:%line] -%kvp- %msg%n</pattern>
     </encoder>
   </appender>
   

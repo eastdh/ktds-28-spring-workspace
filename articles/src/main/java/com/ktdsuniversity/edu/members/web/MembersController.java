@@ -37,13 +37,9 @@ public class MembersController {
       return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
     }
 
-    try {
-      MembersVO membersVO = this.membersService.createNewMember(registMembersVO);
-      // 가입된 회원의 정보를 반환
-      return ApiResponse.OK(membersVO);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    MembersVO membersVO = this.membersService.createNewMember(registMembersVO);
+    // 가입된 회원의 정보를 반환
+    return ApiResponse.OK(membersVO);
   }
 
   @GetMapping("/login")
@@ -57,16 +53,12 @@ public class MembersController {
       return ApiResponse.BAD_REQUEST(validationResult.getFieldErrors());
     }
 
-    try {
-      MembersVO loggedMember = this.membersService.readMember(loginMemberVO);
+    MembersVO loggedMember = this.membersService.readMember(loginMemberVO);
 
-      // HttpSession에 로그인 한 사용자의 정보를 기억시킨다.
-      session.setAttribute("__LOGIN_USER__", loggedMember);
+    // HttpSession에 로그인 한 사용자의 정보를 기억시킨다.
+    session.setAttribute("__LOGIN_USER__", loggedMember);
 
-      return ApiResponse.OK(loggedMember);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    return ApiResponse.OK(loggedMember);
   }
 
   @GetMapping("/logout")

@@ -2,6 +2,7 @@ package com.ktdsuniversity.edu.articles.service;
 
 import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
+import com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 
@@ -12,7 +13,7 @@ public interface ArticlesService {
    * 
    * @return ArticleListVo
    */
-  ArticleListVO readAllArticles();
+  ArticleListVO readAllArticles(SearchArticleVO searchArticleVO);
 
   /**
    * 게시글의 등록을 요청

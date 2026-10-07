@@ -52,12 +52,8 @@ public class RepliesController {
 
     registReplyVO.setEmail(membersVO.getEmail());
 
-    try {
-      RepliesVO result = this.repliesService.createNewReply(articleId, registReplyVO);
-      return ApiResponse.CREATED(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    RepliesVO result = this.repliesService.createNewReply(articleId, registReplyVO);
+    return ApiResponse.CREATED(result);
   }
 
   // PUT /replies/{게시글아이디}/{댓글아이디}
@@ -79,12 +75,8 @@ public class RepliesController {
     modifyReplyVO.setEmail(membersVO.getEmail());
 
 
-    try {
-      RepliesVO result = this.repliesService.updateReply(articleId, replyId, modifyReplyVO);
-      return ApiResponse.OK(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    RepliesVO result = this.repliesService.updateReply(articleId, replyId, modifyReplyVO);
+    return ApiResponse.OK(result);
   }
 
   // DELETE /replies/{게시글아이디}/{댓글아이디}
@@ -96,12 +88,8 @@ public class RepliesController {
           message = "잘못된 요청입니다.") @PathVariable String articleId,
       @Pattern(regexp = "^RE-\\d{8}-\\d{6,8}$",
           message = "잘못된 요청입니다.") @PathVariable String replyId) {
-    try {
-      String result = this.repliesService.deleteReply(articleId, replyId);
-      return ApiResponse.OK(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    String result = this.repliesService.deleteReply(articleId, replyId);
+    return ApiResponse.OK(result);
   }
 
   // PUT /replies/{게시글아이디}/recommend/{댓글아이디}
@@ -112,11 +100,7 @@ public class RepliesController {
           message = "잘못된 요청입니다.") @PathVariable String articleId,
       @Pattern(regexp = "^RE-\\d{8}-\\d{6,8}$",
           message = "잘못된 요청입니다.") @PathVariable String replyId) {
-    try {
-      long result = this.repliesService.recommendOneReply(articleId, replyId);
-      return ApiResponse.OK(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.ERROR(iae.getMessage());
-    }
+    long result = this.repliesService.recommendOneReply(articleId, replyId);
+    return ApiResponse.OK(result);
   }
 }

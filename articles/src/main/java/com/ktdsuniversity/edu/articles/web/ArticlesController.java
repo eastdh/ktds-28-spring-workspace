@@ -1,6 +1,9 @@
 package com.ktdsuniversity.edu.articles.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.SessionAttribute;
 import com.ktdsuniversity.edu.articles.service.ArticlesService;
 import com.ktdsuniversity.edu.articles.vo.request.ModifyArticleVO;
 import com.ktdsuniversity.edu.articles.vo.request.RegistArticleVO;
+import com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticleListVO;
 import com.ktdsuniversity.edu.articles.vo.response.ArticlesVO;
 import com.ktdsuniversity.edu.commons.util.ApiResponse;
@@ -37,6 +41,7 @@ public class ArticlesController {
   // private ArticlesService articlesService;
 
   private ArticlesService articlesService;
+  private final static Logger logger = LoggerFactory.getLogger(ArticlesController.class);
 
   /**
    * Spring Framework 7.0이상
@@ -51,11 +56,17 @@ public class ArticlesController {
   @GetMapping("/articles/list")
   // 컨트롤러가 반환시키는 "객체"를 "JSON"으로 변환시키는 View를 사용해라! ==> @ResponseBody
   @ResponseBody
-  public ApiResponse<ArticleListVO> getArticles() {
-    ArticleListVO articleList = this.articlesService.readAllArticles();
-    return ApiResponse.OK(articleList);
+  public ApiResponse<ArticleListVO> getArticles(SearchArticleVO searchArticleVO) {
+    logger.debug(this.articlesService.toString());
+    ArticleListVO articleList = this.articlesService.readAllArticles(searchArticleVO);
+    logger.debug(articleList.toString());
+
+    ApiResponse<ArticleListVO> response = ApiResponse.OK(articleList);
+    response.setPaginate(searchArticleVO);
+    return response;
   }
 
+  @Transactional
   @PostMapping("/articles")
   @ResponseBody
   public ApiResponse<ArticlesVO> makeNewArticle(
@@ -75,14 +86,11 @@ public class ArticlesController {
 
     registArticleVO.setEmail(membersVO.getEmail());
 
-    try {
-      ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
-      return ApiResponse.CREATED(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    ArticlesVO result = this.articlesService.createNewArticle(registArticleVO);
+    return ApiResponse.CREATED(result);
   }
 
+  @Transactional
   @PutMapping("/articles/{articleId}")
   @ResponseBody
   public ApiResponse<ArticlesVO> updateArticle(
@@ -98,47 +106,34 @@ public class ArticlesController {
 
     modifyArticleVO.setEmail(membersVO.getEmail());
 
-    try {
-      ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);
-      return ApiResponse.OK(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    ArticlesVO result = this.articlesService.updateArticle(articleId, modifyArticleVO);
+    return ApiResponse.OK(result);
   }
 
+  @Transactional
   @DeleteMapping("/articles/{articleId}")
   @ResponseBody
   public ApiResponse<String> deleteArticle(@Pattern(regexp = "^AR-\\d{8}-\\d{6,8}$",
       message = "잘못된 요청입니다.") @PathVariable String articleId) {
-    try {
-      String deleteResult = this.articlesService.deleteArticle(articleId);
-      return ApiResponse.OK(deleteResult);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    String deleteResult = this.articlesService.deleteArticle(articleId);
+    return ApiResponse.OK(deleteResult);
   }
 
+  @Transactional
   @GetMapping("/articles/{articleId}")
   @ResponseBody
   public ApiResponse<ArticlesVO> getOneArticle(@Pattern(regexp = "^AR-\\d{8}-\\d{6,8}$",
       message = "잘못된 요청입니다.") @PathVariable String articleId) {
-    try {
-      ArticlesVO result = this.articlesService.readOneArticle(articleId);
-      return ApiResponse.OK(result);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    ArticlesVO result = this.articlesService.readOneArticle(articleId);
+    return ApiResponse.OK(result);
   }
 
+  @Transactional
   @PutMapping("/articles/recommend/{articleId}")
   @ResponseBody
   public ApiResponse<Long> recommendOneArticle(@Pattern(regexp = "^AR-\\d{8}-\\d{6,8}$",
       message = "잘못된 요청입니다.") @PathVariable String articleId) {
-    try {
-      long recommendResult = this.articlesService.recommendOneArticle(articleId);
-      return ApiResponse.OK(recommendResult);
-    } catch (IllegalArgumentException iae) {
-      return ApiResponse.FORBIDDEN(iae.getMessage());
-    }
+    long recommendResult = this.articlesService.recommendOneArticle(articleId);
+    return ApiResponse.OK(recommendResult);
   }
 }

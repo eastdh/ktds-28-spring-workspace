@@ -18,6 +18,7 @@ public class WebConfig implements WebMvcConfigurer {
         .addPathPatterns("/**")
         // 제외할 URL 가변 길이 인자로 추가
         .excludePathPatterns( //
+            "/error", //
             "/members/login", //
             "/members/signup", //
             "/articles/list", //

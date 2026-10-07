@@ -8,6 +8,9 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import com.ktdsuniversity.edu.commons.exceptions.ArticleException;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ArticleCodes;
+import com.ktdsuniversity.edu.commons.exceptions.enums.ExceptionType;
 import com.ktdsuniversity.edu.files.dao.FilesDao;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileSetVO;
 import com.ktdsuniversity.edu.files.vo.request.RequestFileVO;
@@ -57,7 +60,7 @@ public class MultipartHandler {
       fileSetVO.setEmail(email);
       int insertCount = this.filesDao.insertNewFileSet(fileSetVO);
       if (insertCount == 0) {
-        throw new IllegalArgumentException("파일 세트를 만들 수 없습니다.");
+        throw new ArticleException(ExceptionType.FILES, ArticleCodes.SYSTEM_ERROR);
       }
 
       fileSetId = fileSetVO.getId();
@@ -90,7 +93,7 @@ public class MultipartHandler {
         // 업로드 중 예외 발생하면 업로드된 파일 제거
         storedFileList.forEach(f -> f.delete());
 
-        throw new IllegalArgumentException(e.getMessage(), e);
+        throw new ArticleException(ExceptionType.FILES, ArticleCodes.SYSTEM_ERROR);
       }
     }
 

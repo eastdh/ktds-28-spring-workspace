@@ -14,6 +14,7 @@
   <!-- </select> -->
 
   <select id="selectArticlesCount" 
+          parameterType="com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO"
           resultType="_long">
           SELECT COUNT(DISTINCT A.ID)
             FROM MEMBERS M
@@ -113,49 +114,56 @@
     <!-- List<ArticlesVO> selectAllArticles() -->
 
   <select id="selectAllArticles"
+          parameterType="com.ktdsuniversity.edu.articles.vo.request.SearchArticleVO"
           resultMap="ArticlesVOMap">
-          SELECT A.ID
-               , A.SUBJECT
-               , A.CONTENT
-               , A.EMAIL
-               , A.VIEW_CNT
-               , A.RECOMMEND_CNT
-               , A.DEL_YN
-               , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-               , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-               , F.ID AS FILE_SET_ID
-               , F.EMAIL AS FILE_UPLOADER
-               , F.CRT_DT AS FILE_UPLOAD_DATE
-               , F.MDFY_DT AS FILE_MODIFY_DATE
-               , F.FILE_ID
-               , F.DISPLAY_FILE_NAME
-               , F.OBFUSCATE_FILE_NAME
-               , F.FILE_SIZE
-               , F.DOWNLOAD_COUNT
-               , F.DEL_YN AS FILE_DEL_YN
-               , AES_DECRYPTION(M.NAME) AS NAME
-               , AES_DECRYPTION(M.NICKNAME ) AS NICKNAME
-            FROM MEMBERS M
-           INNER JOIN ARTICLES A
-              ON M.EMAIL = A.EMAIL 
-             AND M.DEL_YN = 'N'
-            LEFT OUTER JOIN (SELECT FS.ID
-                                  , FS.EMAIL
-                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
-                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
-                                  , F.ID AS FILE_ID
-                                  , F.DISPLAY_FILE_NAME
-                                  , F.OBFUSCATE_FILE_NAME
-                                  , F.FILE_SIZE
-                                  , F.DOWNLOAD_COUNT
-                                  , F.DEL_YN
-                               FROM FILE_SET FS
-                              INNER JOIN FILES F
-                                 ON FS.ID = F.FILE_SET_ID
-                              WHERE F.DEL_YN = 'N') F
-              ON A.FILE_SET_ID = F.ID
-           WHERE A.DEL_YN = 'N'
-           ORDER BY A.ID DESC
+          
+          SELECT *
+            FROM (SELECT T.*
+                       , ROWNUM AS RNUM
+                    FROM (SELECT A.ID
+                               , A.SUBJECT
+                               , A.CONTENT
+                               , A.EMAIL
+                               , A.VIEW_CNT
+                               , A.RECOMMEND_CNT
+                               , A.DEL_YN
+                               , TO_CHAR(A.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                               , TO_CHAR(A.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                               , F.ID AS FILE_SET_ID
+                               , F.EMAIL AS FILE_UPLOADER
+                               , F.CRT_DT AS FILE_UPLOAD_DATE
+                               , F.MDFY_DT AS FILE_MODIFY_DATE
+                               , F.FILE_ID
+                               , F.DISPLAY_FILE_NAME
+                               , F.OBFUSCATE_FILE_NAME
+                               , F.FILE_SIZE
+                               , F.DOWNLOAD_COUNT
+                               , F.DEL_YN AS FILE_DEL_YN
+                               , AES_DECRYPTION(M.NAME) AS NAME
+                               , AES_DECRYPTION(M.NICKNAME ) AS NICKNAME
+                            FROM MEMBERS M
+                           INNER JOIN ARTICLES A
+                              ON M.EMAIL = A.EMAIL 
+                             AND M.DEL_YN = 'N'
+                            LEFT OUTER JOIN (SELECT FS.ID
+                                                  , FS.EMAIL
+                                                  , TO_CHAR(FS.CRT_DT, 'YYYY-MM-DD HH24:MI:SS') AS CRT_DT
+                                                  , TO_CHAR(FS.MDFY_DT, 'YYYY-MM-DD HH24:MI:SS') AS MDFY_DT
+                                                  , F.ID AS FILE_ID
+                                                  , F.DISPLAY_FILE_NAME
+                                                  , F.OBFUSCATE_FILE_NAME
+                                                  , F.FILE_SIZE
+                                                  , F.DOWNLOAD_COUNT
+                                                  , F.DEL_YN
+                                               FROM FILE_SET FS
+                                              INNER JOIN FILES F
+                                                 ON FS.ID = F.FILE_SET_ID
+                                              WHERE F.DEL_YN = 'N') F
+                              ON A.FILE_SET_ID = F.ID
+                           WHERE A.DEL_YN = 'N'
+                           ORDER BY A.ID DESC) T
+                   WHERE ROWNUM <![CDATA[<=]]> (#{pageNo}+1) * #{listSize})
+           WHERE RNUM >= #{pageNo} * #{listSize} + 1
   </select>
 
   <select id="selectArticleByArticleId"
