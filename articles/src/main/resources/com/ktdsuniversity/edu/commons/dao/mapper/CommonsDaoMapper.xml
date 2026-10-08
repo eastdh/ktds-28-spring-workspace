@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Commons">
+  <sql id="paginate_header">
+    SELECT *
+      FROM (SELECT T.*
+                 , ROWNUM AS RNUM
+              FROM (
+
+  </sql>
+  <sql id="paginate_footer">
+                    ) T
+             WHERE ROWNUM <![CDATA[<=]]> (#{pageNo}+1) * #{listSize})
+     WHERE RNUM >= #{pageNo} * #{listSize} + 1
+  </sql>
+  
+  <sql id="rank_paginate_header">
+    SELECT *
+      FROM (SELECT T.*
+                 , DENSE_RANK() OVER(ORDER BY ID DESC) AS RNUM
+              FROM (
+  </sql>
+  
+  <sql id="rank_paginate_footer">
+                                          ) T)
+    WHERE RNUM >= #{pageNo} * #{listSize} + 1
+      AND RNUM <![CDATA[<=]]> (#{pageNo} + 1) * #{listSize}
+  </sql>
+
+</mapper>

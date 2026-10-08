@@ -22,7 +22,7 @@ spring:
 # DB Query 동작과 결과를 받아오기 위한 설정 정보 작성
 mybatis:
   config-location: classpath:config/mybatis-config.xml
-  mapper-locations: classpath:com/ktdsuniversity/edu/**/dao/mapper/*DaoMapper.xml
+  mapper-locations: classpath*:com/ktdsuniversity/edu/**/dao/mapper/*DaoMapper.xml
 
 # Custom 환경 설정
 # 사용하려는 Spring Bean에서 @Value로 사용 가능.

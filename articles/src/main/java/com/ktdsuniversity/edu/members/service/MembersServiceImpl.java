@@ -2,6 +2,7 @@ package com.ktdsuniversity.edu.members.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,8 @@ import com.ktdsuniversity.edu.commons.exceptions.enums.ExceptionType;
 import com.ktdsuniversity.edu.members.dao.MembersDao;
 import com.ktdsuniversity.edu.members.vo.request.LoginMemberVO;
 import com.ktdsuniversity.edu.members.vo.request.RegistMembersVO;
+import com.ktdsuniversity.edu.members.vo.request.SearchMemberVO;
+import com.ktdsuniversity.edu.members.vo.response.MemberListVO;
 import com.ktdsuniversity.edu.members.vo.response.MembersVO;
 import lombok.RequiredArgsConstructor;
 
@@ -164,6 +167,19 @@ public class MembersServiceImpl implements MembersService {
     }
 
     return updateLogoutStatus(email);
+  }
+
+  @Override
+  public MemberListVO readMemberList(SearchMemberVO searchMemberVO) {
+    long count = this.membersDao.selectMemberCountBySearch(searchMemberVO);
+    searchMemberVO.caculatePageCount(count);
+    List<MembersVO> list = this.membersDao.selectMemberListBySearch(searchMemberVO);
+
+    MemberListVO memberListVO = new MemberListVO();
+    memberListVO.setMemberCount(count);
+    memberListVO.setMemberList(list);
+
+    return memberListVO;
   }
 
 }
